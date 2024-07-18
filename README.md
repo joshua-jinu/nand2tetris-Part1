@@ -1,6 +1,5 @@
 # Nand2Tetris Project1.1 
-
-> NOT & OR gate HDL implementation
+NOT & OR gate HDL implementation
 
 ### NOT Gate output
 Hardware Simulator
