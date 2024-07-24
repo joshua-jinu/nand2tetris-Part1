@@ -15,3 +15,11 @@ Hardware Simulator
 
 ### XOR Gate output
 ![image](https://github.com/user-attachments/assets/9c5c5fb7-3186-4eb7-af4d-00c87cc91509)
+
+### MUX Gate output
+![image](https://github.com/user-attachments/assets/f80dfbf8-978c-4672-9879-6fc66aabb39c)
+
+
+
+### DMUX Gate output
+![image](https://github.com/user-attachments/assets/e38bfde6-9ff6-486e-8026-349580a07f18)
