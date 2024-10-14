@@ -1,0 +1,67 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/2/ALU.hdl
+/**
+ * ALU (Arithmetic Logic Unit):
+ * Computes out = one of the following functions:
+ *                0, 1, -1,
+ *                x, y, !x, !y, -x, -y,
+ *                x + 1, y + 1, x - 1, y - 1,
+ *                x + y, x - y, y - x,
+ *                x & y, x | y
+ * on the 16-bit inputs x, y,
+ * according to the input bits zx, nx, zy, ny, f, no.
+ * In addition, computes the two output bits:
+ * if (out == 0) zr = 1, else zr = 0
+ * if (out < 0)  ng = 1, else ng = 0
+ */
+// Implementation: Manipulates the x and y inputs
+// and operates on the resulting values, as follows:
+// if (zx == 1) sets x = 0        // 16-bit constant
+// if (nx == 1) sets x = !x       // bitwise not
+// if (zy == 1) sets y = 0        // 16-bit constant
+// if (ny == 1) sets y = !y       // bitwise not
+// if (f == 1)  sets out = x + y  // integer 2's complement addition
+// if (f == 0)  sets out = x & y  // bitwise and
+// if (no == 1) sets out = !out   // bitwise not
+
+CHIP ALU {
+    IN  
+        x[16], y[16],  // 16-bit inputs        
+        zx, // zero the x input?
+        nx, // negate the x input?
+        zy, // zero the y input?
+        ny, // negate the y input?
+        f,  // compute (out = x + y) or (out = x & y)?
+        no; // negate the out output?
+    OUT 
+        out[16], // 16-bit output
+        zr,      // if (out == 0) equals 1, else 0
+        ng;      // if (out < 0)  equals 1, else 0
+
+    PARTS:
+
+    Mux16 (a=x, b=false, sel=zx, out=zerx);         //Zero x 
+    Not16 (in=zerx, out=notx);                  
+    Mux16 (a=zerx, b=notx, sel=nx, out=readyX);     //Negate x
+
+    Mux16 (a=y, b=false, sel=zy, out=zery);         //Zero y
+    Not16 (in=zery, out=noty);
+    Mux16 (a=zery, b=noty, sel=ny, out=readyY);     //negate y
+
+    Add16 (a=readyX, b=readyY, out=sumXY);          //x+y
+    And16 (a=readyX, b=readyY, out=andXY);          //x&y
+    Mux16 (a=andXY, b=sumXY, sel=f, out=doneOut);   //chose operation
+    Not16 (in=doneOut, out=notDoneOut);             
+    Mux16 (a=doneOut, b=notDoneOut, sel=no, out[0..7]=readyOut1, out[8..15]=readyOut2 );        //negation
+    
+    And (a[0..15]=true, b[0..7]=readyOut1, b[8..15]=readyOut2 ,out[15]=ng,out[0..14]=drop);     //check negative - ng
+
+    Or8Way(in=readyOut1, out=pzr1);
+    Or8Way(in=readyOut2, out=pzr2);
+    Or (a=pzr1, b=pzr2, out=pzr);
+    Not (in=pzr, out=zr);                           //check zero - zr
+
+    Or16 (a[0..7]=readyOut1, a[8..15]=readyOut2, b=false, out=out);     //output - out
+}
